@@ -3,13 +3,17 @@ package io.afero.cloudhsm.v2.simulator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.*;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Signature;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static java.lang.Class.forName;
 
 /**
  * @author nrheckman 8/29/18 11:13 AM
@@ -21,11 +25,11 @@ public class LoadSimulator implements Runnable {
 	private final ExecutorService executorService;
 	private final SignatureTimingSupplierFactory signatureTimingSupplierFactory;
 
-	public LoadSimulator(KeyStore keyStore, String user, String password, String keyAlias, int concurrency, int count) throws Exception {
+	public LoadSimulator(KeyStore keyStore, String credentials, String keyAlias, int concurrency, int count) throws Exception {
 		this.count = count;
 
 		executorService = Executors.newFixedThreadPool(concurrency);
-		signatureTimingSupplierFactory = new SignatureTimingSupplierFactory(keyStore, keyAlias, user + ":" + password);
+		signatureTimingSupplierFactory = new SignatureTimingSupplierFactory(keyStore, keyAlias, credentials);
 	}
 
 	@Override
