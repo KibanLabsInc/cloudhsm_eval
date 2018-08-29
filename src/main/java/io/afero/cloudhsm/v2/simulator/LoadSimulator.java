@@ -13,7 +13,7 @@ public class LoadSimulator implements Runnable {
 	private final int rate;
 	private final int count;
 
-	public LoadSimulator(String keyAlias, int rate, int count) {
+	public LoadSimulator(String user, String password, String keyAlias, int rate, int count) {
 		this.keyAlias = keyAlias;
 		this.rate = rate;
 		this.count = count;

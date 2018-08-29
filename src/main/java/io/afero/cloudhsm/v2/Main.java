@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,16 +18,21 @@ public class Main {
 		LOG.info("Application started with arguments, " + Arrays.toString(args));
 
 		if (args.length < 3) {
-			LOG.error("Expected application arguments <keyAlias>, <rate>, <count> were not found. " +
-					"If running from gradle, use --args '<keyAlias> <rate> <count>'");
+			LOG.error("Expected application arguments <user> <keyAlias>, <rate>, <count> were not found. " +
+					"If running from gradle, use --args '<user> <keyAlias> <rate> <count>'");
 			System.exit(1);
 		}
 
-		String keyAlias = args[0];
-		int rate = Integer.parseInt(args[1]);
-		int count = Integer.parseInt(args[2]);
+		String user = args[0];
+		String keyAlias = args[1];
+		int rate = Integer.parseInt(args[2]);
+		int count = Integer.parseInt(args[3]);
 
-		Runnable simulator = new LoadSimulator(keyAlias, rate, count);
+		Scanner scanner = new Scanner( System.in );
+		System.out.print( "Key Alias Password? " );
+		String password = scanner.nextLine();
+
+		Runnable simulator = new LoadSimulator(user, password, keyAlias, rate, count);
 
 		long simulatorStartNanos = System.nanoTime();
 		simulator.run();
