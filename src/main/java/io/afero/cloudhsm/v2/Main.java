@@ -28,11 +28,17 @@ public class Main {
 		int rate = Integer.parseInt(args[2]);
 		int count = Integer.parseInt(args[3]);
 
-		Scanner scanner = new Scanner( System.in );
-		System.out.print( "Key Alias Password? " );
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Key Alias Password? ");
 		String password = scanner.nextLine();
 
-		Runnable simulator = new LoadSimulator(user, password, keyAlias, rate, count);
+		Runnable simulator = null;
+		try {
+			simulator = new LoadSimulator(user, password, keyAlias, rate, count);
+		} catch (Exception e) {
+			LOG.fatal("Unable to instantiate simulator", e);
+			System.exit(1);
+		}
 
 		long simulatorStartNanos = System.nanoTime();
 		simulator.run();
