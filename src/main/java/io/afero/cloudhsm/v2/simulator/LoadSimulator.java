@@ -15,13 +15,13 @@ public class LoadSimulator implements Runnable {
 	private static final Logger LOG = LogManager.getLogger(LoadSimulator.class);
 
 	private final String keyAlias;
-	private final int rate;
+	private final int concurrency;
 	private final int count;
 	private final KeyStore keyStore;
 
-	public LoadSimulator(String user, String password, String keyAlias, int rate, int count) throws Exception {
+	public LoadSimulator(String user, String password, String keyAlias, int concurrency, int count) throws Exception {
 		this.keyAlias = keyAlias;
-		this.rate = rate;
+		this.concurrency = concurrency;
 		this.count = count;
 
 		keyStore = createKeyStore(user, password);

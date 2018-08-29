@@ -18,14 +18,14 @@ public class Main {
 		LOG.info("Application started with arguments, " + Arrays.toString(args));
 
 		if (args.length < 3) {
-			LOG.error("Expected application arguments <user> <keyAlias>, <rate>, <count> were not found. " +
-					"If running from gradle, use --args '<user> <keyAlias> <rate> <count>'");
+			LOG.error("Expected application arguments <user> <keyAlias>, <concurrency>, <count> were not found. " +
+					"If running from gradle, use --args '<user> <keyAlias> <concurrency> <count>'");
 			System.exit(1);
 		}
 
 		String user = args[0];
 		String keyAlias = args[1];
-		int rate = Integer.parseInt(args[2]);
+		int concurrency = Integer.parseInt(args[2]);
 		int count = Integer.parseInt(args[3]);
 
 		Scanner scanner = new Scanner(System.in);
@@ -34,7 +34,7 @@ public class Main {
 
 		Runnable simulator = null;
 		try {
-			simulator = new LoadSimulator(user, password, keyAlias, rate, count);
+			simulator = new LoadSimulator(user, password, keyAlias, concurrency, count);
 		} catch (Exception e) {
 			LOG.fatal("Unable to instantiate simulator", e);
 			System.exit(1);
