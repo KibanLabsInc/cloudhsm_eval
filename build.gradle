@@ -10,3 +10,8 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.8.+'
     compile 'org.apache.logging.log4j:log4j-core:2.8.+'
 }
+
+task run(type:JavaExec) {
+    main = 'io.afero.cloudhsm.v2.Main'
+    classpath = sourceSets.main.runtimeClasspath
+}
