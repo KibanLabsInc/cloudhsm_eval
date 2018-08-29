@@ -6,4 +6,7 @@ repositories {
 }
 
 dependencies {
+    compile files('lib/cloudhsm-1.1.0')
+    compile 'org.apache.logging.log4j:log4j-api:2.8.+'
+    compile 'org.apache.logging.log4j:log4j-core:2.8.+'
 }
