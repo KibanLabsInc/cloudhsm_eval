@@ -8,10 +8,7 @@ import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -41,6 +38,12 @@ public class LoadSimulator implements Runnable {
 		for (int i = 0; i < count; i++) {
 			CompletableFuture.supplyAsync(signatureTimingSupplierFactory.create(), executorService)
 					.thenAccept(timingConsumer);
+		}
+
+		try {
+			executorService.awaitTermination(600, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			throw new CompletionException(e);
 		}
 	}
 
