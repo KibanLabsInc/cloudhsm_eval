@@ -31,6 +31,7 @@ public class LoadSimulator implements Runnable {
 
 	@Override
 	public void run() {
+		LOG.debug("Starting simulator for " + count + " signing requests");
 		Consumer<Long> timingConsumer = (nanos) -> {
 			LOG.trace("Sign took " + nanos);
 		};
@@ -41,6 +42,7 @@ public class LoadSimulator implements Runnable {
 		}
 
 		try {
+			executorService.shutdown();
 			executorService.awaitTermination(600, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			throw new CompletionException(e);

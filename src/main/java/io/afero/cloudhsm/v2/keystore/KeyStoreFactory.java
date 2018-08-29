@@ -1,5 +1,8 @@
 package io.afero.cloudhsm.v2.keystore;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.Provider;
@@ -10,8 +13,10 @@ import static java.lang.Class.forName;
  * @author nrheckman 8/29/18 1:15 PM
  */
 public class KeyStoreFactory {
+	private static final Logger LOG = LogManager.getLogger(KeyStoreFactory.class);
 
 	public KeyStore create(String provider, String credentials) throws Exception {
+		LOG.debug("Attempting KeyStore creation for provider: '" + provider + "'");
 		KeyStoreSupplier supplier;
 		switch (provider) {
 			case "cavium":
