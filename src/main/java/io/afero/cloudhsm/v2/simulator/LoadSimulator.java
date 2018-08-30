@@ -4,10 +4,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.Signature;
+import java.security.*;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,7 +93,8 @@ public class LoadSimulator implements Runnable {
 
 				long nanos = System.nanoTime();
 				try {
-					Signature signatureInstance = Signature.getInstance("NONEwithECDSA");
+					String provider = keyStore.getProvider().getName();
+					Signature signatureInstance = Signature.getInstance("NONEwithECDSA", provider);
 					signatureInstance.initSign((PrivateKey)keyStore.getKey(keyAlias, credentials.toCharArray()));
 
 					signatureInstance.update(bytes);
