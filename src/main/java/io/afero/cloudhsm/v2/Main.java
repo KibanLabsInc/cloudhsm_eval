@@ -41,7 +41,7 @@ public class Main {
 					keyStoreFactory.create(provider, credentials),
 					credentials, keyAlias, concurrency, count);
 		} catch (Exception e) {
-			LOG.fatal("Unable to instantiate simulator", e);
+			LOG.error("Unable to instantiate simulator", e);
 			System.exit(1);
 		}
 
