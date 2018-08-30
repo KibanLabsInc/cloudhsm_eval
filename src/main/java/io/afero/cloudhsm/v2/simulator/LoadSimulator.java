@@ -94,16 +94,16 @@ public class LoadSimulator implements Runnable {
 				byte[] bytes = new byte[32];
 				random.nextBytes(bytes);
 
-				long nanos;
+				long nanos = System.nanoTime();
 				try {
 					Signature signatureInstance = Signature.getInstance("NONEwithECDSA");
 					signatureInstance.initSign((PrivateKey)keyStore.getKey(keyAlias, credentials.toCharArray()));
 
-					nanos = System.nanoTime();
 					signatureInstance.update(bytes);
 					signatureInstance.sign();
 				} catch (Exception e) {
-					throw new CompletionException(e);
+					LOG.error("Sign failed", e);
+					System.exit(1);
 				}
 
 				return System.nanoTime() - nanos;
