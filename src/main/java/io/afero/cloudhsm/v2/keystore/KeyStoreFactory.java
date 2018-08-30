@@ -18,7 +18,7 @@ public class KeyStoreFactory {
 	public KeyStore create(String provider, String credentials) throws Exception {
 		LOG.debug("Attempting KeyStore creation for provider: '" + provider + "'");
 		KeyStoreSupplier supplier;
-		switch (provider) {
+		switch (provider.toLowerCase()) {
 			case "cavium":
 				supplier = new CaviumKeyStoreSupplier(credentials);
 				break;
