@@ -8,7 +8,8 @@ run {
 }
 
 repositories {
-    jcenter()
+    mavenLocal()
+    mavenCentral()
     flatDir {
         dir 'lib'
     }
@@ -19,4 +20,5 @@ dependencies {
     compile ':LunaProvider'
     compile 'org.apache.logging.log4j:log4j-api:2.8.+'
     compile 'org.apache.logging.log4j:log4j-core:2.8.+'
+    compile 'org.apache.commons:commons-math3:3.6.+'
 }

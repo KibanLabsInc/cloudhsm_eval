@@ -1,5 +1,6 @@
 package io.afero.cloudhsm.v2.simulator;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,6 +10,7 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -32,8 +34,17 @@ public class LoadSimulator implements Runnable {
 	@Override
 	public void run() {
 		LOG.debug("Starting simulator for " + count + " signing requests");
+
+		AtomicInteger completeCounter = new AtomicInteger(0);
+		DescriptiveStatistics statistics = new DescriptiveStatistics();
+
 		Consumer<Long> timingConsumer = (nanos) -> {
-			LOG.trace("Sign took " + nanos);
+			synchronized (statistics) {
+				statistics.addValue(nanos);
+				if (completeCounter.getAndIncrement() % 100 == 0) {
+					printStats(statistics);
+				}
+			}
 		};
 
 		for (int i = 0; i < count; i++) {
@@ -47,6 +58,17 @@ public class LoadSimulator implements Runnable {
 		} catch (InterruptedException e) {
 			throw new CompletionException(e);
 		}
+
+		printStats(statistics);
+	}
+
+	private void printStats(DescriptiveStatistics statistics) {
+		long maxNanos = Double.valueOf(statistics.getMax()).longValue();
+		long minNanos = Double.valueOf(statistics.getMin()).longValue();
+		long meanNanos = Double.valueOf(statistics.getMean()).longValue();
+		LOG.trace("Max: " + TimeUnit.MILLISECONDS.convert(maxNanos, TimeUnit.NANOSECONDS) + ", " +
+				"Min: " + TimeUnit.MILLISECONDS.convert(minNanos, TimeUnit.NANOSECONDS) + ", " +
+				"Mean: " + TimeUnit.MILLISECONDS.convert(meanNanos, TimeUnit.NANOSECONDS));
 	}
 
 	private static class SignatureTimingSupplierFactory {
