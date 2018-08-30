@@ -4,17 +4,19 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.*;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Signature;
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * @author nrheckman 8/29/18 11:13 AM
  */
-public class LoadSimulator implements Runnable {
+public class LoadSimulator implements Callable<Stats> {
 	private static final Logger LOG = LogManager.getLogger(LoadSimulator.class);
 
 	private final int count;
@@ -29,18 +31,14 @@ public class LoadSimulator implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public Stats call() throws Exception {
 		LOG.debug("Starting simulator for " + count + " signing requests");
 
-		AtomicInteger completeCounter = new AtomicInteger(0);
 		DescriptiveStatistics statistics = new DescriptiveStatistics();
 
 		Consumer<Long> timingConsumer = (nanos) -> {
 			synchronized (statistics) {
 				statistics.addValue(nanos);
-				if (completeCounter.getAndIncrement() % 100 == 0) {
-					printStats(statistics);
-				}
 			}
 		};
 
@@ -56,16 +54,10 @@ public class LoadSimulator implements Runnable {
 			throw new CompletionException(e);
 		}
 
-		printStats(statistics);
-	}
-
-	private void printStats(DescriptiveStatistics statistics) {
-		long maxNanos = Double.valueOf(statistics.getMax()).longValue();
-		long minNanos = Double.valueOf(statistics.getMin()).longValue();
-		long meanNanos = Double.valueOf(statistics.getMean()).longValue();
-		LOG.trace("Max: " + TimeUnit.MILLISECONDS.convert(maxNanos, TimeUnit.NANOSECONDS) + ", " +
-				"Min: " + TimeUnit.MILLISECONDS.convert(minNanos, TimeUnit.NANOSECONDS) + ", " +
-				"Mean: " + TimeUnit.MILLISECONDS.convert(meanNanos, TimeUnit.NANOSECONDS));
+		return new Stats(
+				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMax()).longValue(), TimeUnit.NANOSECONDS),
+				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMin()).longValue(), TimeUnit.NANOSECONDS),
+				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMean()).longValue(), TimeUnit.NANOSECONDS));
 	}
 
 	private static class SignatureTimingSupplierFactory {

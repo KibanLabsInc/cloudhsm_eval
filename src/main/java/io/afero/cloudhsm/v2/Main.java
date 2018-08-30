@@ -2,11 +2,13 @@ package io.afero.cloudhsm.v2;
 
 import io.afero.cloudhsm.v2.keystore.KeyStoreFactory;
 import io.afero.cloudhsm.v2.simulator.LoadSimulator;
+import io.afero.cloudhsm.v2.simulator.Stats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -15,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 	private static final Logger LOG = LogManager.getLogger(Main.class);
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		LOG.info("Application started with arguments, " + Arrays.toString(args));
 
 		if (args.length < 3) {
@@ -35,7 +37,7 @@ public class Main {
 
 		KeyStoreFactory keyStoreFactory = new KeyStoreFactory();
 
-		Runnable simulator = null;
+		Callable<Stats> simulator = null;
 		try {
 			simulator = new LoadSimulator(
 					keyStoreFactory.create(provider, credentials),
@@ -46,11 +48,14 @@ public class Main {
 		}
 
 		long simulatorStartNanos = System.nanoTime();
-		simulator.run();
 
-		LOG.debug("Simulator total execution ms: " +
-				TimeUnit.MILLISECONDS.convert(
-						System.nanoTime() - simulatorStartNanos,
-						TimeUnit.NANOSECONDS));
+		Stats stats = simulator.call();
+
+		long totalMs = TimeUnit.MILLISECONDS.convert(
+				System.nanoTime() - simulatorStartNanos,
+				TimeUnit.NANOSECONDS);
+		System.out.println(String.format("Max: %d, Min: %d, Mean: %d, Total: %d", stats.getMax(), stats.getMin(), stats.getMean(), totalMs));
+
+		LOG.debug("Simulator total execution ms: " + totalMs);
 	}
 }
