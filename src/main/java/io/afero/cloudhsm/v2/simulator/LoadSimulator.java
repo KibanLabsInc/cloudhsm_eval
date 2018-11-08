@@ -4,7 +4,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Signature;
@@ -23,15 +22,15 @@ public class LoadSimulator implements Callable<Stats> {
 	private final ExecutorService executorService;
 	private final SignatureTimingSupplierFactory signatureTimingSupplierFactory;
 
-	public LoadSimulator(KeyStore keyStore, String credentials, String keyAlias, int concurrency, int count) throws Exception {
+	public LoadSimulator(String provider, PrivateKey key, int concurrency, int count) {
 		this.count = count;
 
 		executorService = Executors.newFixedThreadPool(concurrency);
-		signatureTimingSupplierFactory = new SignatureTimingSupplierFactory(keyStore, keyAlias, credentials);
+		signatureTimingSupplierFactory = new SignatureTimingSupplierFactory(provider, key);
 	}
 
 	@Override
-	public Stats call() throws Exception {
+	public Stats call() {
 		LOG.debug("Starting simulator for " + count + " signing requests");
 
 		DescriptiveStatistics statistics = new DescriptiveStatistics();
@@ -62,21 +61,27 @@ public class LoadSimulator implements Callable<Stats> {
 
 	private static class SignatureTimingSupplierFactory {
 		private static final Random random = new SecureRandom();
-		private final KeyStore keyStore;
-		private final String keyAlias;
-		private final String credentials;
+		private final PrivateKey key;
+		private final String provider;
 
-		private SignatureTimingSupplierFactory(KeyStore keyStore, String keyAlias, String credentials) {
-			this.keyStore = keyStore;
-			this.keyAlias = keyAlias;
-			this.credentials = credentials;
+		private SignatureTimingSupplierFactory(String provider, PrivateKey key) {
+			this.key = key;
+			this.provider = provider;
 		}
 
 		Supplier<Long> create() {
-			return new SignatureTimingSupplier();
+			return new SignatureTimingSupplier(provider, key);
 		}
 
 		private class SignatureTimingSupplier implements Supplier<Long> {
+
+			private String provider;
+			private PrivateKey key;
+
+			SignatureTimingSupplier(String provider, PrivateKey key) {
+				this.provider = provider;
+				this.key = key;
+			}
 
 			@Override
 			public Long get() {
@@ -85,9 +90,8 @@ public class LoadSimulator implements Callable<Stats> {
 
 				long nanos = System.nanoTime();
 				try {
-					String provider = keyStore.getProvider().getName();
 					Signature signatureInstance = Signature.getInstance("NONEwithECDSA", provider);
-					signatureInstance.initSign((PrivateKey)keyStore.getKey(keyAlias, credentials.toCharArray()));
+					signatureInstance.initSign(key);
 
 					signatureInstance.update(bytes);
 					signatureInstance.sign();

@@ -6,6 +6,8 @@ import io.afero.cloudhsm.v2.simulator.Stats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
@@ -39,9 +41,12 @@ public class Main {
 
 		Callable<Stats> simulator = null;
 		try {
+			KeyStore keyStore = keyStoreFactory.create(provider, credentials);
 			simulator = new LoadSimulator(
-					keyStoreFactory.create(provider, credentials),
-					credentials, keyAlias, concurrency, count);
+					provider,
+					((PrivateKey)keyStore.getKey(keyAlias, credentials.toCharArray())),
+					concurrency,
+					count);
 		} catch (Exception e) {
 			LOG.error("Unable to instantiate simulator", e);
 			System.exit(1);
