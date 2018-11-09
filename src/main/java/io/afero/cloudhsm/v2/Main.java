@@ -43,7 +43,7 @@ public class Main {
 		try {
 			KeyStore keyStore = keyStoreFactory.create(provider, credentials);
 			simulator = new LoadSimulator(
-					provider,
+					keyStore.getProvider().getName(),
 					((PrivateKey)keyStore.getKey(keyAlias, credentials.toCharArray())),
 					concurrency,
 					count);
