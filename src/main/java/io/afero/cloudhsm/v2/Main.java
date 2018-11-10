@@ -52,14 +52,11 @@ public class Main {
 			System.exit(1);
 		}
 
-		long simulatorStartNanos = System.nanoTime();
-
 		Stats stats = simulator.call();
-
-		long totalMs = TimeUnit.MILLISECONDS.convert(
-				System.nanoTime() - simulatorStartNanos,
-				TimeUnit.NANOSECONDS);
-		System.out.println(String.format("Max: %d, Min: %d, Mean: %d, Total: %d", stats.getMax(), stats.getMin(), stats.getMean(), totalMs));
+		long totalMs = stats.getTotal();
+		double operationsPerSecond = (double)count / ((double)totalMs / 1000);
+		System.out.println(String.format("Max: %d, Min: %d, Mean: %d, Total: %d, Calls: %f/s",
+				stats.getMax(), stats.getMin(), stats.getMean(), totalMs, operationsPerSecond));
 
 		LOG.debug("Simulator total execution ms: " + totalMs);
 	}

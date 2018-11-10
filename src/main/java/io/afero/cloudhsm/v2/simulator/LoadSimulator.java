@@ -1,6 +1,7 @@
 package io.afero.cloudhsm.v2.simulator;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedSummaryStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +34,7 @@ public class LoadSimulator implements Callable<Stats> {
 	public Stats call() {
 		LOG.debug("Starting simulator for " + count + " signing requests");
 
-		DescriptiveStatistics statistics = new DescriptiveStatistics();
+		SummaryStatistics statistics = new SynchronizedSummaryStatistics();
 
 		Consumer<Long> timingConsumer = (nanos) -> {
 			synchronized (statistics) {
@@ -41,6 +42,7 @@ public class LoadSimulator implements Callable<Stats> {
 			}
 		};
 
+		long startNanos = System.nanoTime();
 		for (int i = 0; i < count; i++) {
 			CompletableFuture.supplyAsync(signatureTimingSupplierFactory.create(), executorService)
 					.thenAccept(timingConsumer);
@@ -54,6 +56,7 @@ public class LoadSimulator implements Callable<Stats> {
 		}
 
 		return new Stats(
+				TimeUnit.MILLISECONDS.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS),
 				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMax()).longValue(), TimeUnit.NANOSECONDS),
 				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMin()).longValue(), TimeUnit.NANOSECONDS),
 				TimeUnit.MILLISECONDS.convert(Double.valueOf(statistics.getMean()).longValue(), TimeUnit.NANOSECONDS));
