@@ -29,9 +29,9 @@ to execute 1000 signing requests using a max concurrency of 10 threads.
 ## Execution Results
 ### Environment
 
-Using AWS c5.xlarge instance type (4 CPU, 8GB RAM).
+Using AWS c5.large instance type (2 CPU, 4GB RAM).
 
-CloudHSM V2 (cavium): 2 HSM node(s)
+CloudHSM V2 (cavium): 6 HSM node(s)
 
 CloudHSM Classic (luna): 1 HSM node(s)
 
@@ -41,173 +41,64 @@ Execution timing measures the max, min and mean of individual signing requests,
 as well as total time to process all requests.
 
 
-### Test 1 (CloudHSM V2)
-The following data was collected running with the following command:
+### Test 1 (CloudHSM Classic)
+```
+$ bin/cloudhsm_eval luna authenticator 2 1000
+Max: 21, Min: 6, Mean: 12, Total: 6252, Calls: 159.948816/s
 
-`bin/cloudhsm_eval cavium authenticator-1 1 2000`
+$ bin/cloudhsm_eval luna authenticator 4 1000
+Max: 25, Min: 6, Mean: 12, Total: 3057, Calls: 327.118090/s
 
-This will execute 2000 signing requests with no concurrency.
+$ bin/cloudhsm_eval luna authenticator 8 1000
+Max: 28, Min: 6, Mean: 11, Total: 1521, Calls: 657.462196/s
 
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~1%   | 86MB
-cloudhsm_client | ~9%   | 32MB
+$ bin/cloudhsm_eval luna authenticator 12 1000
+Max: 24, Min: 6, Mean: 9, Total: 778, Calls: 1285.347044/s
 
-#### Execution Timing
-Max | Min | Mean | Total
---- | --- | ---- | ----
-276 | 72  | 161  | 323,238
+$ bin/cloudhsm_eval luna authenticator 16 1000
+Max: 24, Min: 6, Mean: 8, Total: 533, Calls: 1876.172608/s
 
-Mean signing request was 161 ms, with a total of 5.3 minutes required to complete.
+$ bin/cloudhsm_eval luna authenticator 32 1000
+Max: 46, Min: 8, Mean: 16, Total: 543, Calls: 1841.620626/s
 
+$ bin/cloudhsm_eval luna authenticator 64 1000
+Max: 81, Min: 19, Mean: 32, Total: 568, Calls: 1760.563380/s
+```
 
-### Test 2 (CloudHSM Classic)
-The following data was collected running with the following command:
+These results indicate that the ideal concurrency would be around 16 threads, more than which shows a drop in performance.
 
-`bin/cloudhsm_eval luna authenticator 1 2000`
+Expected throughput of nearly 1900 signature operations per second.
 
-This will execute 2000 signing requests with no concurrency.
+### Test 2 (CloudHSM V2)
+```
+$ bin/cloudhsm_eval cavium authenticator-1 2 1000
+Max: 20, Min: 7, Mean: 8, Total: 4394, Calls: 227.583068/s
 
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~5%   | 92MB
-HsmClient? N/A  | N/A   | N/A
+$ bin/cloudhsm_eval cavium authenticator-1 8 1000
+Max: 113, Min: 7, Mean: 17, Total: 2283, Calls: 438.020149/s
 
-#### Execution Timing
-Max | Min | Mean | Total
---- | --- | ---- | ----
-49  | 15  | 16   | 33,471
+$ bin/cloudhsm_eval cavium authenticator-1 16 1000
+Max: 124, Min: 7, Mean: 31, Total: 2039, Calls: 490.436488/s
 
-Mean signing request was 16 ms, with a total of 33 seconds required to complete.
+$ bin/cloudhsm_eval cavium authenticator-1 32 1000
+Max: 156, Min: 7, Mean: 51, Total: 1679, Calls: 595.592615/s
 
+$ bin/cloudhsm_eval cavium authenticator-1 64 1000
+Max: 175, Min: 8, Mean: 71, Total: 1238, Calls: 807.754443/s
 
-### Test 3 (CloudHSM V2)
-The following data was collected running with the following command:
+$ bin/cloudhsm_eval cavium authenticator-1 92 1000
+Max: 176, Min: 8, Mean: 79, Total: 980, Calls: 1020.408163/s
 
-`bin/cloudhsm_eval cavium authenticator-1 10 2000`
+$ bin/cloudhsm_eval cavium authenticator-1 128 1000
+Max: 223, Min: 8, Mean: 100, Total: 930, Calls: 1075.268817/s
 
-This will execute 2000 signing requests with 10 threads of concurrency.
+$ bin/cloudhsm_eval cavium authenticator-1 192 1000
+Max: 279, Min: 8, Mean: 129, Total: 830, Calls: 1204.819277/s
 
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~3%   | 85MB
-cloudhsm_client | ~65%  | 256MB
+$ bin/cloudhsm_eval cavium authenticator-1 256 1000
+Max: 338, Min: 10, Mean: 158, Total: 813, Calls: 1230.012300/s
+```
 
-#### Execution Timing
-Max | Min | Mean | Total
---- | --- | ---- | ----
-240 | 72  | 106  | 21,465
+These results indicate that the ideal concurrency would be around 92 threads, more than that seems to yield diminishing returns.
 
-Mean signing request was 106 ms, with a total of 21 seconds required to complete.
-
-### Test 4 (CloudHSM Classic)
-The following data was collected running with the following command:
-
-`bin/cloudhsm_eval luna authenticator 10 2000`
-
-This will execute 2000 signing requests with 10 threads of concurrency.
-
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~9%   | 90MB
-HsmClient? N/A  | N/A   | N/A
-
-#### Execution Timing
-Max | Min | Mean | Total
---- | --- | ---- | ----
-267 | 38  | 64   | 12,898
-
-Mean signing request was 64 ms, with a total of 13 seconds required to complete.
-
-### Test 5 (CloudHSM V2)
-The following data was collected running with the following command:
-
-`bin/cloudhsm_eval cavium authenticator-1 100 2000`
-
-This will execute 2000 signing requests with 100 threads of concurrency.
-
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~3%   | 84MB
-cloudhsm_client | ~66%  | 2.4GB
-
-#### Execution Timing
-Max  | Min | Mean | Total
----- | --- | ---- | ----
-1506 | 616 | 1021 | 20,852
-
-Mean signing request was 1 second, with a total of 21 seconds required to complete.
-
-
-### Test 6 (CloudHSM Classic)
-The following data was collected running with the following command:
-
-`bin/cloudhsm_eval luna authenticator 100 2000`
-
-This will execute 2000 signing requests with 100 threads of concurrency.
-
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~20%  | 94MB
-HsmClient? N/A  | N/A   | N/A
-
-#### Execution Timing
-Max | Min | Mean | Total
---- | --- | ---- | ----
-408 | 240 | 317  | 6,471
-
-Mean signing request was 317 ms, with a total of 6 seconds required to complete.
-
-
-### Test 7 (CloudHSM V2)
-The following data was collected running with the following command:
-
-`bin/cloudhsm_eval cavium authenticator-1 200 2000`
-
-This will execute 2000 signing requests with 200 threads of concurrency.
-
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~4%   | 83MB
-cloudhsm_client | ~80%  | 4.9GB
-
-#### Execution Timing
-Max  | Min  | Mean | Total
----- | ---- | ---- | ----
-3259 | 1342 | 2036 | 20,966
-
-Mean signing request was 2 seconds, with a total of 21 seconds required to complete.
-
-
-### Test 8 (CloudHSM Classic)
-The following data was collected running with the following command:
-
-`bin/cloudhsm_eval luna authenticator 200 2000`
-
-This will execute 2000 signing requests with 200 threads of concurrency.
-
-#### Instance Resource Consumption
-Process         | CPU   | Memory (res)
---------------- | ----- | -------------
-java            | ~15%  | 94MB
-HsmClient? N/A  | N/A   | N/A
-
-#### Execution Timing
-Max  | Min | Mean | Total
----- | --- | ---- | ----
-1152 | 528 | 906  | 9,267
-
-Mean signing request was 906 ms, with a total of 9 seconds required to complete.
-
-## Conclusions
-
-CloudHSM V2 performance is measurably lower than Classic performance, even with twice as many HSM modules.
-It also consumes significant system resources as request concurrency scales, w/o improvement in performance (when measured above 10 threads concurrency).
-
+Expected throughput of nearly 1100 signature operations per second.
