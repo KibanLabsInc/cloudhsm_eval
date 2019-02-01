@@ -26,6 +26,8 @@ It takes a number of arguments in the form of \<provider\> \<key alias\> \<concu
 The above uses the Cavium CloudHSM provider, and uses the private key identified by alias key1
 to execute 1000 signing requests using a max concurrency of 10 threads.
 
+Note: prompted Key Alias Credentials for luna is password only, while for cavium it expects username:password.
+
 ## Execution Results
 ### Environment
 
@@ -38,7 +40,7 @@ CloudHSM Classic (luna): 1 HSM node(s)
 All cryptographic key material used for signing was generated from the `secp256r1` curve.
 
 Execution timing measures the max, min and mean of individual signing requests,
-as well as total time to process all requests.
+total time to process all requests and calculated calls per second.
 
 
 ### Test 1 (CloudHSM Classic)
@@ -84,21 +86,21 @@ $ bin/cloudhsm_eval cavium authenticator-1 32 1000
 Max: 156, Min: 7, Mean: 51, Total: 1679, Calls: 595.592615/s
 
 $ bin/cloudhsm_eval cavium authenticator-1 64 1000
-Max: 175, Min: 8, Mean: 71, Total: 1238, Calls: 807.754443/s
+Max: 208, Min: 8, Mean: 78, Total: 1243, Calls: 804.052424/s
 
 $ bin/cloudhsm_eval cavium authenticator-1 92 1000
-Max: 176, Min: 8, Mean: 79, Total: 980, Calls: 1020.408163/s
+Max: 176, Min: 8, Mean: 79, Total: 980, Calls: 1092.145749/s
 
 $ bin/cloudhsm_eval cavium authenticator-1 128 1000
-Max: 223, Min: 8, Mean: 100, Total: 930, Calls: 1075.268817/s
+Max: 263, Min: 8, Mean: 113, Total: 901, Calls: 1109.016303/s
 
 $ bin/cloudhsm_eval cavium authenticator-1 192 1000
-Max: 279, Min: 8, Mean: 129, Total: 830, Calls: 1204.819277/s
+Max: 308, Min: 9, Mean: 153, Total: 815, Calls: 1225.790635/s
 
 $ bin/cloudhsm_eval cavium authenticator-1 256 1000
-Max: 338, Min: 10, Mean: 158, Total: 813, Calls: 1230.012300/s
+Max: 404, Min: 9, Mean: 192, Total: 772, Calls: 1295.169020/s
 ```
 
-These results indicate that the ideal concurrency would be around 92 threads, more than that seems to yield diminishing returns.
+These results indicate that the ideal concurrency would be between 128 and 192 threads, more than that seems to yield diminishing returns.
 
-Expected throughput of nearly 1100 signature operations per second.
+Expected throughput of nearly 1200 signature operations per second.
